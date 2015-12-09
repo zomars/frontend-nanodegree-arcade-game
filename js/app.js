@@ -1,15 +1,27 @@
+// Shared properties between game entities
+// Superclass tutorial from:
+// http://www.javascriptkit.com/javatutors/oopjs3.shtml
+var gameEntity = function() {
+
+    this.render = function(){
+        ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
+    };
+
+    // height and width of sprite to be used in collision detection
+    this.height = 82;
+    this.width = 102;
+};
+
 // Enemies our player must avoid
 var Enemy = function() {
+    this.inheritFrom = gameEntity;
+    this.inheritFrom();
     // Variables applied to each of our instances go here,
     // we've provided one for you to get started
 
     // The image/sprite for our enemies, this uses
     // a helper we've provided to easily load images
     this.sprite = 'images/enemy-bug.png';
-
-    // Enemmy sprite dimensions
-    this.height = 82;
-    this.width = 102;
 
     this.x = this.y = this.speed = 0;
     this.setStartPosition();
@@ -24,11 +36,6 @@ Enemy.prototype.update = function(dt) {
     // which will ensure the game runs at the same speed for
     // all computers.
 
-    // Collision detection with enemies
-    if (this.collision()) {
-        player.reset();
-    }
-
     // Movement calculations
     var newX = Math.round(this.x + (dt * this.speed));
     this.previousX = this.x;
@@ -42,9 +49,7 @@ Enemy.prototype.update = function(dt) {
 };
 
 // Draw the enemy on the screen, required method for game
-Enemy.prototype.render = function() {
-    ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
-};
+
 
 // Set a random start position on 1 of 3 possible rows
 Enemy.prototype.setStartPosition = function() {
@@ -61,16 +66,16 @@ Enemy.prototype.setStartPosition = function() {
 };
 
 // Using the bounding box method described in the HTML5 games class.
-Enemy.prototype.collision = function() {
+var checkCollisions = function(currentEnemy) {
     // Only check for collision if Player and Enemy on same row
-    if (this.y == player.y) {
+    if (currentEnemy.y == player.y) {
 
         // Create Enemy bounding box object
         var enemyBox = {
-            top: this.y,
-            left: this.previousX,
-            bottom: this.y + this.width,
-            right: this.x + this.height
+            top: currentEnemy.y,
+            left: currentEnemy.previousX,
+            bottom: currentEnemy.y + currentEnemy.width,
+            right: currentEnemy.x + currentEnemy.height
         };
 
         // Create Player bounding box object
@@ -82,7 +87,8 @@ Enemy.prototype.collision = function() {
         };
 
         // Do the bounding boxes overlap
-        if (this.intersect(enemyBox, playerBox)) {
+        if (currentEnemy.intersect(enemyBox, playerBox)) {
+            player.reset();
             return true;
         }
     }
@@ -104,12 +110,12 @@ Enemy.prototype.getRandomInt = function(min, max) {
 // This class requires an update(), render() and
 // a handleInput() method.
 var Player = function() {
+    this.inheritFrom = gameEntity;
+    this.inheritFrom();
     // Load player image and set starting position of character.
     this.sprite = 'images/char-boy.png';
 
-    // height and width of sprite to be used in collision detection
-    this.height = 82;
-    this.width = 101;
+
 
     // reset() moves the Player to the starting position
     this.x = this.y = 0;
@@ -121,9 +127,7 @@ Player.prototype.update = function() {
 };
 
 // Draw the Player on the screen
-Player.prototype.render = function() {
-    ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
-};
+
 
 // Determine if an arrow key was pressed and which one.  Move the
 // Player in that direction as long as it is within the bounds of
@@ -132,44 +136,41 @@ Player.prototype.render = function() {
 Player.prototype.handleInput = function(allowedKeys) {
     var x, y;
 
-    // left arrow
-    if (allowedKeys === 'left') {
-        x = this.x - 101;
-        // Do not allow Player to move off left side of board
-        if (x >= 0) {
-            this.x = x;
-        }
-    }
-
-    // right arrow
-    if (allowedKeys === 'right') {
-        x = this.x + 101;
-        // Do not allow Player to move off right side of board
-        if (x <= 404) {
-            this.x = x;
-        }
-    }
-
-    // up arrow
-    if (allowedKeys === 'up') {
-        y = this.y - 83;
-        // Do not allow Player to move off top of board
-        if (y >= -14) {
-            this.y = y;
-        }
-        if (y == -14) {
-            // Player moved into water row, move back to starting position
-            this.reset();
-        }
-    }
-
-    // down arrow
-    if (allowedKeys === 'down') {
-        y = this.y + 83;
-        // Do not allow Player to move off bottom of board
-        if (y <= 401) {
-            this.y = y;
-        }
+    switch (allowedKeys) {
+        case 'left':
+            x = this.x - 101;
+            // Do not allow Player to move off left side of board
+            if (x >= 0) {
+                this.x = x;
+            }
+            break;
+        case 'right':
+            x = this.x + 101;
+            // Do not allow Player to move off right side of board
+            if (x <= 404) {
+                this.x = x;
+            }
+            break;
+        case 'up':
+            y = this.y - 83;
+            // Do not allow Player to move off top of board
+            if (y >= -14) {
+                this.y = y;
+            }
+            if (y == -14) {
+                // Player moved into water row, move back to starting position
+                this.reset();
+            }
+            break;
+        case 'down':
+            y = this.y + 83;
+            // Do not allow Player to move off bottom of board
+            if (y <= 401) {
+                this.y = y;
+            }
+            break;
+        default:
+            return false;
     }
 };
 
@@ -188,8 +189,7 @@ var allEnemies = [];
 
 // Create Enemies
 for(var i = 0; i < numEnemies; i++) {
-    var enemy = new Enemy();
-    allEnemies.push(enemy);
+    allEnemies.push(new Enemy());
 }
 
 // Create Player
