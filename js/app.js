@@ -90,9 +90,9 @@ Enemy.prototype.collision = function() {
 };
 
 // Returns true if the Enemy and Player overlap at any point
-Enemy.prototype.intersect = function(enemy, player) {
-    return !(player.left > enemy.right || player.right < enemy.left ||
-             player.top > enemy.bottom || player.bottom < enemy.top);
+Enemy.prototype.intersect = function(enemyBox, playerBox) {
+    return !(playerBox.left > enemyBox.right || playerBox.right < enemyBox.left ||
+             playerBox.top > enemyBox.bottom || playerBox.bottom < enemyBox.top);
 };
 
 // Returns a random integer between min and max and can include min or max
