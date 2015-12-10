@@ -155,6 +155,38 @@ var Engine = (function(global) {
         player.render();
     }
 
+    /* This function checks for collisions between the enemies and the player,
+     * using the bounding box method described in the HTML5 games class.
+     */
+    function checkCollisions(currentEnemy) {
+        // Only check for collision if Player and Enemy on same row
+        if (currentEnemy.y == player.y) {
+
+            // Create Enemy bounding box object
+            var enemyBox = {
+                top: currentEnemy.y,
+                left: currentEnemy.previousX,
+                bottom: currentEnemy.y + currentEnemy.width,
+                right: currentEnemy.x + currentEnemy.height
+            };
+
+            // Create Player bounding box object
+            var playerBox = {
+                top: player.y,
+                left: player.x + 20,
+                bottom: player.y + player.height,
+                right: player.x + player.width
+            };
+
+            // Do the bounding boxes overlap
+            if (currentEnemy.intersect(enemyBox, playerBox)) {
+                player.reset();
+                return true;
+            }
+        }
+        return false;
+    };
+
     /* This function does nothing but it could have been a good place to
      * handle game reset states - maybe a new game menu or a game over screen
      * those sorts of things. It's only called once by the init() method.

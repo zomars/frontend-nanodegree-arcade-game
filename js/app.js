@@ -1,21 +1,20 @@
 // Shared properties between game entities
 // Superclass tutorial from:
 // http://www.javascriptkit.com/javatutors/oopjs3.shtml
-var gameEntity = function() {
-
-    this.render = function(){
-        ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
-    };
-
+// https://developer.mozilla.org/en/docs/Web/JavaScript/Inheritance_and_the_prototype_chain
+var GameEntity = function() {
     // height and width of sprite to be used in collision detection
     this.height = 82;
     this.width = 102;
 };
 
+GameEntity.prototype.render = function() {
+    ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
+};
+
 // Enemies our player must avoid
 var Enemy = function() {
-    this.inheritFrom = gameEntity;
-    this.inheritFrom();
+    GameEntity.call(this);
     // Variables applied to each of our instances go here,
     // we've provided one for you to get started
 
@@ -28,6 +27,10 @@ var Enemy = function() {
 
     this.previousX = this.x;
 };
+
+Enemy.prototype=Object.create(GameEntity.prototype);
+
+Enemy.prototype.constructor = Enemy;
 
 // Update the enemy's position, required method for game
 // Parameter: dt, a time delta between ticks
@@ -48,9 +51,6 @@ Enemy.prototype.update = function(dt) {
     }
 };
 
-// Draw the enemy on the screen, required method for game
-
-
 // Set a random start position on 1 of 3 possible rows
 Enemy.prototype.setStartPosition = function() {
     // Set a random start x position off the left side of the board
@@ -63,36 +63,6 @@ Enemy.prototype.setStartPosition = function() {
 
     // Set a random speed
     this.speed = this.getRandomInt(100, 500);
-};
-
-// Using the bounding box method described in the HTML5 games class.
-var checkCollisions = function(currentEnemy) {
-    // Only check for collision if Player and Enemy on same row
-    if (currentEnemy.y == player.y) {
-
-        // Create Enemy bounding box object
-        var enemyBox = {
-            top: currentEnemy.y,
-            left: currentEnemy.previousX,
-            bottom: currentEnemy.y + currentEnemy.width,
-            right: currentEnemy.x + currentEnemy.height
-        };
-
-        // Create Player bounding box object
-        var playerBox = {
-            top: player.y,
-            left: player.x + 20,
-            bottom: player.y + player.height,
-            right: player.x + player.width
-        };
-
-        // Do the bounding boxes overlap
-        if (currentEnemy.intersect(enemyBox, playerBox)) {
-            player.reset();
-            return true;
-        }
-    }
-    return false;
 };
 
 // Returns true if the Enemy and Player overlap at any point
@@ -110,8 +80,7 @@ Enemy.prototype.getRandomInt = function(min, max) {
 // This class requires an update(), render() and
 // a handleInput() method.
 var Player = function() {
-    this.inheritFrom = gameEntity;
-    this.inheritFrom();
+    GameEntity.call(this);
     // Load player image and set starting position of character.
     this.sprite = 'images/char-boy.png';
 
@@ -121,6 +90,10 @@ var Player = function() {
     this.x = this.y = 0;
     this.reset();
 };
+
+Player.prototype=Object.create(GameEntity.prototype);
+
+Player.prototype.constructor = Player;
 
 // Not used but still needed by the engine
 Player.prototype.update = function() {
